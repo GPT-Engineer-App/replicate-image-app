@@ -1,8 +1,27 @@
-import { Box, Container, Flex, Heading, HStack, IconButton, Image, Input, Text } from "@chakra-ui/react";
+import { Box, Container, Flex, Heading, HStack, IconButton, Image, Input, Text, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Button, FormControl, FormLabel, Textarea, Select } from "@chakra-ui/react";
+import { useState } from "react";
+import { useAddNote } from "../integrations/supabase/index.js";
 import { useNotes } from "../integrations/supabase/index.js";
 import { FaBars, FaPlus } from "react-icons/fa";
 
 const Index = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [color, setColor] = useState("gray");
+  const addNoteMutation = useAddNote();
+
+  const handleAddNote = () => {
+    addNoteMutation.mutate({ title, content, color });
+    setIsModalOpen(false);
+    setTitle("");
+    setContent("");
+    setColor("gray");
+  };
+
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
   const { data: notes, error, isLoading } = useNotes();
 
   if (isLoading) {
@@ -63,7 +82,41 @@ return (
         bottom={8}
         right={8}
         borderRadius="full"
+        onClick={openModal}
       />
+    <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Add a new note</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <FormControl id="title" mb={4}>
+              <FormLabel>Title</FormLabel>
+              <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+            </FormControl>
+            <FormControl id="content" mb={4}>
+              <FormLabel>Content</FormLabel>
+              <Textarea value={content} onChange={(e) => setContent(e.target.value)} />
+            </FormControl>
+            <FormControl id="color" mb={4}>
+              <FormLabel>Color</FormLabel>
+              <Select value={color} onChange={(e) => setColor(e.target.value)}>
+                <option value="gray">Gray</option>
+                <option value="green">Green</option>
+                <option value="red">Red</option>
+                <option value="orange">Orange</option>
+                <option value="pink">Pink</option>
+              </Select>
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={handleAddNote}>
+              Add Note
+            </Button>
+            <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Container>
   );
 };
