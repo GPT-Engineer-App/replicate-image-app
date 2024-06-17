@@ -1,35 +1,34 @@
-import { Box, Container, Flex, Heading, HStack, IconButton, Image, Input, Text, VStack } from "@chakra-ui/react";
+import { Box, Container, Flex, Heading, HStack, IconButton, Image, Input, Text } from "@chakra-ui/react";
+import { useNotes } from "../integrations/supabase/index.js";
 import { FaBars, FaPlus } from "react-icons/fa";
 
-const notes = [
-  {
-    title: "lorem ipsum",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a tristique augue, ut egestas velit. Mauris condimentum sed ante at sagittis. Suspendisse vitae lacinia purus. Donec a tristique augue, ut egestas velit.",
-    timestamp: "last opened yesterday 16:03",
-    bgColor: "green.100",
-  },
-  {
-    title: "lorem ipsum",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a tristique augue, ut egestas velit.",
-    timestamp: "last opened yesterday 9:03",
-    bgColor: "pink.100",
-  },
-  {
-    title: "lorem ipsum",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a tristique augue, ut egestas velit.",
-    timestamp: "last opened friday",
-    bgColor: "green.100",
-  },
-  {
-    title: "lorem ipsum",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a tristique augue, ut egestas velit. Sed venenatis, nunc ut fermentum interdum, quam eros sollicitudin enim, eu porttitor risus enim ut felis. Nunc tellus libero, fringilla eu commodo sit amet, maximus a mauris. Mauris aliquam.",
-    timestamp: "last opened august 20",
-    bgColor: "yellow.100",
-  },
-];
-
 const Index = () => {
-  return (
+  const { data: notes, error, isLoading } = useNotes();
+
+  if (isLoading) {
+    return <Text>Loading...</Text>;
+  }
+
+  if (error) {
+    return <Text>Error: {error.message}</Text>;
+  }
+
+  const getColor = (color) => {
+    switch (color) {
+      case 'green':
+        return 'green.100';
+      case 'red':
+        return 'red.100';
+      case 'orange':
+        return 'orange.100';
+      case 'pink':
+        return 'pink.100';
+      default:
+        return 'gray.100';
+    }
+  };
+
+return (
     <Container maxW="container.xl" p={4}>
       <Flex justifyContent="space-between" alignItems="center" mb={8}>
         <HStack spacing={4}>
@@ -46,11 +45,11 @@ const Index = () => {
       </Box>
       <Box>
         <Flex wrap="wrap" justifyContent="space-between">
-          {notes.map((note, index) => (
-            <Box key={index} bg={note.bgColor} p={4} borderRadius="md" m={2} flexBasis="45%">
+          {notes.map((note) => (
+            <Box key={note.id} bg={getColor(note.color)} p={4} borderRadius="md" m={2} flexBasis="45%">
               <Heading as="h3" size="md" mb={2}>{note.title}</Heading>
-              <Text mb={4}>{note.description}</Text>
-              <Text fontSize="sm" color="gray.500">{note.timestamp}</Text>
+              <Text mb={4}>{note.content}</Text>
+              <Text fontSize="sm" color="gray.500">{new Date(note.created_at).toLocaleString()}</Text>
             </Box>
           ))}
         </Flex>
